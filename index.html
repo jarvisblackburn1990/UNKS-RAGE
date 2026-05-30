@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Unk's Rage</title>
+<style>
+body{
+  margin:0;
+  background:#020202;
+  color:white;
+  font-family:Arial,sans-serif;
+  text-align:center;
+  overflow-x:hidden;
+}
+h1{margin:10px 0 0;font-size:42px}
+p{margin:4px 0 10px;color:#ccc}
+canvas{
+  width:96vw;
+  max-width:1800px;
+  height:auto;
+  border-radius:18px;
+  box-shadow:0 0 60px #000;
+  border:2px solid #333;
+}
+button{
+  font-size:22px;
+  margin:8px;
+  padding:16px 28px;
+  border-radius:16px;
+  background:#10131a;
+  color:white;
+  border:2px solid #333;
+  cursor:pointer;
+}
+button:hover{background:#222b3a}
+</style>
+</head>
+<body>
+
+<h1>UNK'S RAGE</h1>
+<p>Call Center Simulator — Keep the rage meter down.</p>
+
+<canvas id="game" width="2560" height="1440"></canvas><br>
+
+<button onclick="calm(14)">☕ Coffee</button>
+<button onclick="calm(12)">🎵 Smooth Jazz</button>
+<button onclick="calm(18)">🧘 Deep Breath</button>
+<button onclick="calm(10)">📞 Transfer Call</button>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+let rage=28;
+let score=0;
+let gameOver=false;
+let quote="Customer: My internet still ain't working!";
+let caller="Larry T.";
+let time=24;
+
+const chatter=[
+"Customer: I already rebooted it like 10 times!",
+"Customer: Can I speak to your supervisor?",
+"Customer: Y'all messed my bill up!",
+"Customer: It was working yesterday!",
+"Customer: I been on hold for 45 minutes!",
+"Unk: It don't work like that!"
+];
+
+function calm(n){
+ if(gameOver)return;
+ rage=Math.max(0,rage-n);
+ score++;
+}
+
+setInterval(()=>{
+ if(gameOver)return;
+ rage+=Math.random()*6+4;
+ quote=chatter[Math.floor(Math.random()*chatter.length)];
+ time++;
+ if(rage>=100){rage=100;gameOver=true;}
+},1600);
+
+function roundRect(x,y,w,h,r,fill=true,stroke=false){
+ ctx.beginPath();
+ ctx.roundRect(x,y,w,h,r);
+ if(fill)ctx.fill();
+ if(stroke)ctx.stroke();
+}
+
+function officeBackground(){
+ let bg=ctx.createLinearGradient(0,0,0,1440);
+ bg.addColorStop(0,"#17130d");
+ bg.addColorStop(.45,"#312819");
+ bg.addColorStop(1,"#060606");
+ ctx.fillStyle=bg;
+ ctx.fillRect(0,0,2560,1440);
+
+ // ceiling lights
+ for(let i=0;i<7;i++){
+  ctx.fillStyle="rgba(255,235,180,.18)";
+  ctx.fillRect(360+i*300,120,180,40);
+  ctx.fillStyle="rgba(255,230,170,.08)";
+  ctx.fillRect(330+i*300,115,240,60);
+ }
+
+ // distant cubicles
+ for(let i=0;i<9;i++){
+  let x=120+i*280;
+  ctx.fillStyle="#252933";
+  ctx.fillRect(x,500,230,230);
+  ctx.fillStyle="#111820";
+  ctx.fillRect(x+28,535,150,95);
+  ctx.fillStyle="#2e3745";
+  ctx.fillRect(x+15,700,220,35);
+ }
+
+ // posters
+ ctx.fillStyle="#101820"; roundRect(530,320,230,310,10);
+ ctx.fillStyle="#cfc6ad"; ctx.font="42px Impact";
+ ctx.fillText("CUSTOMER",555,395);
+ ctx.fillText("SERVICE",560,455);
+ ctx.fillText("IS OUR",585,515);
+ ctx.fillText("SUPERPOWER",545,575);
+
+ ctx.fillStyle="#101820"; roundRect(1710,320,230,310,10);
+ ctx.fillStyle="#cfc6ad";
+ ctx.fillText("STAY CALM",1740,405);
+ ctx.fillText("HANDLE",1765,465);
+ ctx.fillText("CALLS",1785,525);
+ ctx.fillText("GET PAID",1745,585);
+
+ // coworkers silhouettes
+ drawWorker(420,690,.75);
+ drawWorker(2050,700,.72);
+
+ // desk
+ let desk=ctx.createLinearGradient(0,960,0,1440);
+ desk.addColorStop(0,"#8b5a2b");
+ desk.addColorStop(1,"#2c1708");
+ ctx.fillStyle=desk;
+ ctx.fillRect(0,960,2560,480);
+
+ // front monitor
+ ctx.fillStyle="#050505"; roundRect(610,930,1340,340,28);
+ ctx.fillStyle="#101010"; roundRect(650,980,1260,230,20);
+ ctx.fillStyle="#060606"; ctx.fillRect(830,1260,900,70);
+ ctx.fillStyle="#000"; ctx.fillRect(980,1320,600,35);
+
+ // phone
+ ctx.fillStyle="#0c0c0e"; roundRect(2110,1020,270,340,30);
+ ctx.fillStyle="#152218"; roundRect(2170,1065,150,70,10);
+ ctx.fillStyle="#47ff4f"; ctx.font="34px monospace";
+ ctx.fillText("ON CALL",2185,1112);
+
+ // mug
+ ctx.fillStyle="#0b0b0b"; roundRect(130,1120,170,180,25);
+ ctx.strokeStyle="#333"; ctx.lineWidth=12;
+ ctx.strokeRect(280,1160,70,70);
+ ctx.fillStyle="#ddd"; ctx.font="38px Impact";
+ ctx.fillText("BEST",180,1180);
+ ctx.fillText("AGENT",165,1230);
+ ctx.fillText("EVER",180,1280);
+
+ // sticky note
+ ctx.fillStyle="#e4c542"; roundRect(1765,1010,150,150,4);
+ ctx.fillStyle="#111"; ctx.font="32px Comic Sans MS";
+ ctx.fillText("YOU",1805,1055);
+ ctx.fillText("GOT",1805,1095);
+ ctx.fillText("THIS",1795,1135);
+ ctx.fillText("UNK!",1800,1175);
+}
+
+function drawWorker(x,y,s){
+ ctx.save();
+ ctx.translate(x,y);
+ ctx.scale(s,s);
+ ctx.fillStyle="#0d0f14"; roundRect(-60,60,120,170,20);
+ ctx.fillStyle="#7b4b2a"; ctx.beginPath(); ctx.arc(0,0,55,0,Math.PI*2); ctx.fill();
+ ctx.fillStyle="#111"; ctx.fillRect(-55,-55,110,45);
+ ctx.fillStyle="#1d3550"; roundRect(-80,70,160,210,35);
+ ctx.fillStyle="#111"; ctx.fillRect(70,-5,20,80);
+ ctx.restore();
+}
+
+function drawUnk(){
+ let hot=Math.min(150,rage*1.55);
+ let skin=`rgb(${122+hot},78,42)`;
+ let angry=rage>55;
+ let max=rage>82;
+
+ ctx.save();
+ ctx.translate(790,260);
+
+ // shoulders/body
+ ctx.fillStyle="#30361f"; roundRect(25,550,950,520,95);
+ ctx.fillStyle="#526042"; roundRect(85,515,830,510,100);
+
+ // shirt folds
+ ctx.strokeStyle="rgba(0,0,0,.25)";
+ ctx.lineWidth=8;
+ for(let i=0;i<9;i++){
+  ctx.beginPath();
+  ctx.moveTo(150+i*75,620);
+  ctx.bezierCurveTo(170+i*70,750,130+i*70,850,160+i*70,1030);
+  ctx.stroke();
+ }
+
+ // collar
+ ctx.fillStyle="#2e3829";
+ ctx.beginPath();
+ ctx.moveTo(285,555); ctx.lineTo(500,755); ctx.lineTo(715,555);
+ ctx.lineTo(650,535); ctx.lineTo(500,660); ctx.lineTo(350,535);
+ ctx.closePath(); ctx.fill();
+
+ // neck
+ ctx.fillStyle=skin; roundRect(430,430,140,160,30);
+
+ // head
+ ctx.fillStyle=skin; roundRect(230,120,540,430,145);
+
+ // ears
+ ctx.beginPath();
+ ctx.arc(220,330,50,0,Math.PI*2);
+ ctx.arc(780,330,50,0,Math.PI*2);
+ ctx.fill();
+
+ // hair
+ ctx.fillStyle="#050505"; roundRect(240,70,520,135,75);
+ ctx.fillStyle="#111";
+ for(let i=0;i<80;i++){
+  ctx.beginPath();
+  ctx.arc(260+Math.random()*480,75+Math.random()*110,8,0,Math.PI*2);
+  ctx.fill();
+ }
+
+ // fade
+ ctx.fillStyle="rgba(0,0,0,.45)";
+ ctx.fillRect(250,180,500,55);
+
+ // headset
+ ctx.strokeStyle="#202020"; ctx.lineWidth=30;
+ ctx.beginPath();
+ ctx.arc(500,250,330,Math.PI*1.1,Math.PI*1.9);
+ ctx.stroke();
+
+ ctx.fillStyle="#111"; roundRect(145,260,90,160,30);
+ ctx.fillStyle="#111"; roundRect(765,260,90,160,30);
+ ctx.strokeStyle="#333"; ctx.lineWidth=8;
+ ctx.strokeRect(155,280,70,120);
+ ctx.strokeRect(775,280,70,120);
+
+ ctx.strokeStyle="#111"; ctx.lineWidth=12;
+ ctx.beginPath();
+ ctx.moveTo(815,395); ctx.quadraticCurveTo(780,500,690,485); ctx.stroke();
+ ctx.fillStyle="#111"; roundRect(650,465,90,35,15);
+
+ // beard
+ ctx.fillStyle="#130d0a"; roundRect(305,425,390,120,65);
+ ctx.fillStyle=skin; roundRect(335,395,330,85,50);
+
+ // eyes
+ ctx.fillStyle="white";
+ ctx.beginPath(); ctx.ellipse(370,325,70,35,0,0,Math.PI*2); ctx.fill();
+ ctx.beginPath(); ctx.ellipse(625,325,70,35,0,0,Math.PI*2); ctx.fill();
+ ctx.fillStyle="#090909";
+ ctx.beginPath(); ctx.arc(370,330,17,0,Math.PI*2); ctx.fill();
+ ctx.beginPath(); ctx.arc(625,330,17,0,Math.PI*2); ctx.fill();
+
+ // eyebrows
+ ctx.strokeStyle="#060606"; ctx.lineWidth=18;
+ ctx.beginPath();
+ if(angry){
+  ctx.moveTo(270,250);ctx.lineTo(450,300);
+  ctx.moveTo(730,250);ctx.lineTo(550,300);
+ } else {
+  ctx.moveTo(280,280);ctx.lineTo(450,250);
+  ctx.moveTo(550,250);ctx.lineTo(720,280);
+ }
+ ctx.stroke();
+
+ // nose
+ ctx.strokeStyle="#60341f"; ctx.lineWidth=9;
+ ctx.beginPath();
+ ctx.moveTo(500,335); ctx.lineTo(465,430); ctx.lineTo(535,430);
+ ctx.stroke();
+
+ // mouth
+ ctx.strokeStyle="#080808"; ctx.lineWidth=13;
+ ctx.beginPath();
+ if(max){
+  ctx.ellipse(500,500,95,48,0,0,Math.PI*2);
+ }else if(angry){
+  ctx.arc(500,535,115,Math.PI,0);
+ }else{
+  ctx.arc(500,460,115,0,Math.PI);
+ }
+ ctx.stroke();
+
+ if(!angry){
+  ctx.fillStyle="#fff";
+  roundRect(390,462,220,34,8);
+  ctx.strokeStyle="#ddd"; ctx.lineWidth=3;
+  for(let i=0;i<6;i++){
+   ctx.beginPath(); ctx.moveTo(420+i*30,462); ctx.lineTo(420+i*30,496); ctx.stroke();
+  }
+ }
+
+ // rage veins
+ if(max){
+  ctx.strokeStyle="#8d0000"; ctx.lineWidth=12;
+  ctx.beginPath();
+  ctx.moveTo(720,160);ctx.lineTo(790,95);ctx.lineTo(760,210);ctx.lineTo(835,170);
+  ctx.moveTo(275,165);ctx.lineTo(205,95);ctx.lineTo(235,210);ctx.lineTo(160,170);
+  ctx.stroke();
+ }
+
+ // red glow overlay
+ if(rage>70){
+  ctx.fillStyle=`rgba(255,0,0,${(rage-70)/160})`;
+  roundRect(230,120,540,430,145);
+ }
+
+ ctx.restore();
+}
+
+function panels(){
+ // logo
+ ctx.fillStyle="white";
+ ctx.font="90px Impact";
+ ctx.fillText("UNK'S",45,110);
+ ctx.fillStyle="#d20d0d";
+ ctx.fillText("RAGE",300,110);
+ ctx.fillStyle="#ffd400";
+ ctx.font="36px Arial";
+ ctx.fillText("CALL CENTER SIMULATOR",85,165);
+
+ // rage meter
+ ctx.fillStyle="#050505"; roundRect(730,65,960,70,18);
+ let grd=ctx.createLinearGradient(745,75,1665,75);
+ grd.addColorStop(0,"#12ff1e");
+ grd.addColorStop(.5,"yellow");
+ grd.addColorStop(1,"red");
+ ctx.fillStyle=grd; roundRect(748,82,rage*9.05,38,12);
+ ctx.strokeStyle="#aaa"; ctx.lineWidth=5; ctx.strokeRect(730,65,960,70);
+ ctx.fillStyle="white"; ctx.font="44px Arial";
+ ctx.fillText("RAGE METER",1045,48);
+ ctx.fillStyle="red"; ctx.font="82px Arial";
+ ctx.fillText(Math.floor(rage)+"%",1740,125);
+
+ // current caller
+ ctx.fillStyle="rgba(0,0,0,.75)"; roundRect(25,245,390,640,18);
+ ctx.strokeStyle="#444"; ctx.strokeRect(25,245,390,640);
+ ctx.fillStyle="#ffe600"; ctx.font="36px Arial";
+ ctx.fillText("CURRENT CALLER",55,305);
+ ctx.fillStyle="white"; ctx.font="38px Arial";
+ ctx.fillText(caller,170,390);
+ ctx.fillStyle="#e33";
+ ctx.beginPath(); ctx.arc(95,390,55,0,Math.PI*2); ctx.fill();
+ ctx.fillStyle="#000";
+ ctx.beginPath(); ctx.arc(95,370,22,0,Math.PI*2); ctx.fill();
+ ctx.beginPath(); ctx.arc(95,425,45,Math.PI,0); ctx.fill();
+ ctx.fillStyle="#ffe600"; ctx.font="34px Arial";
+ ctx.fillText("ISSUE:",55,500);
+ ctx.fillStyle="white"; ctx.font="34px Arial";
+ wrapText(quote.replace("Customer: ",""),55,565,310,45);
+ ctx.fillStyle="#ffe600"; ctx.fillText("CALL TIME",55,780);
+ ctx.fillStyle="white"; ctx.font="42px Arial";
+ ctx.fillText("00:"+String(time).padStart(2,"0"),55,840);
+
+ // office chatter
+ ctx.fillStyle="rgba(0,0,0,.76)"; roundRect(2110,245,410,430,18);
+ ctx.strokeStyle="#444"; ctx.strokeRect(2110,245,410,430);
+ ctx.fillStyle="#c46cff"; ctx.font="36px Arial";
+ ctx.fillText("OFFICE CHATTER",2140,305);
+ ctx.fillStyle="white"; ctx.font="30px Arial";
+ ctx.fillText("Tyrone: This system trash",2140,370);
+ ctx.fillText("Lisa: Back to back calls smh",2140,430);
+ ctx.fillText("Mike: Who got lunch?",2140,490);
+ ctx.fillText("Alicia: I need a raise FR!",2140,550);
+
+ // bottom controls
+ ctx.fillStyle="rgba(0,0,0,.82)"; roundRect(420,1240,1720,160,22);
+ ctx.fillStyle="white"; ctx.font="36px Arial";
+ ctx.fillText("CHOOSE SOMETHING TO CALM UNK DOWN",790,1295);
+
+ buttonBox(455,1320,"☕","COFFEE","-14% RAGE","#a25b25");
+ buttonBox(845,1320,"♪","SMOOTH JAZZ","-12% RAGE","#295d9f");
+ buttonBox(1235,1320,"☻","DEEP BREATH","-18% RAGE","#269b38");
+ buttonBox(1625,1320,"☎","TRANSFER CALL","-10% RAGE","#7333a8");
+
+ if(gameOver){
+  ctx.fillStyle="rgba(0,0,0,.78)";
+  ctx.fillRect(0,0,2560,1440);
+  ctx.fillStyle="#ff1414";
+  ctx.font="140px Impact";
+  ctx.fillText("UNK SNAPPED!",820,650);
+  ctx.fillStyle="white";
+  ctx.font="64px Arial";
+  ctx.fillText('"IT DON’T WORK LIKE THAT!"',830,740);
+  ctx.font="42px Arial";
+  ctx.fillText("Refresh to play again",1040,820);
+ }
+}
+
+function buttonBox(x,y,icon,title,sub,color){
+ ctx.fillStyle="#0b0d12"; roundRect(x,y,340,90,18);
+ ctx.strokeStyle=color; ctx.lineWidth=4; ctx.strokeRect(x,y,340,90);
+ ctx.fillStyle="white"; ctx.font="46px Arial"; ctx.fillText(icon,x+35,y+60);
+ ctx.font="30px Arial"; ctx.fillText(title,x+110,y+38);
+ ctx.fillStyle="#43ff43"; ctx.font="28px Arial"; ctx.fillText(sub,x+110,y+72);
+}
+
+function wrapText(text,x,y,maxWidth,lineHeight){
+ let words=text.split(" "), line="";
+ for(let n=0;n<words.length;n++){
+  let test=line+words[n]+" ";
+  if(ctx.measureText(test).width>maxWidth&&n>0){
+   ctx.fillText(line,x,y); line=words[n]+" "; y+=lineHeight;
+  }else line=test;
+ }
+ ctx.fillText(line,x,y);
+}
+
+function loop(){
+ ctx.save();
+ if(rage>85&&!gameOver){
+  ctx.translate((Math.random()-.5)*20,(Math.random()-.5)*20);
+ }
+ officeBackground();
+ drawUnk();
+ panels();
+ ctx.restore();
+ requestAnimationFrame(loop);
+}
+loop();
+</script>
+
+</body>
+</html>
